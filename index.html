@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>来史一把 · 智慧刷题社区</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#2c3e66">
+    <style>
+        :root { --base-font-size: 16px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { background: #eef2f7; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; padding: 16px; font-size: var(--base-font-size); }
+        .app-container { max-width: 550px; margin: 0 auto; background: white; border-radius: 32px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); overflow: hidden; }
+        .header { background: #2c3e66; color: white; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .user-info { display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.2); padding: 6px 14px; border-radius: 40px; }
+        .avatar { font-size: calc(var(--base-font-size) * 1.75); }
+        .user-name { font-weight: bold; }
+        .btn-icon { background: white; border: none; padding: 6px 14px; border-radius: 30px; font-weight: 600; color: #2c3e66; cursor: pointer; font-size: calc(var(--base-font-size) * 0.875); }
+        .tab-bar { display: flex; background: #fff; border-bottom: 1px solid #e9ecef; overflow-x: auto; }
+        .tab { flex: 1; text-align: center; padding: 14px 0; font-weight: 600; cursor: pointer; color: #6c757d; transition: 0.2s; white-space: nowrap; font-size: calc(var(--base-font-size) * 0.9); }
+        .tab.active { color: #2c3e66; border-bottom: 3px solid #ffaa44; }
+        .content { padding: 20px; }
+        .mode-switch { display: flex; gap: 12px; background: #f8f9fa; padding: 8px; border-radius: 60px; margin-bottom: 20px; }
+        .mode-btn { flex: 1; text-align: center; padding: 8px 0; border-radius: 40px; font-weight: 600; background: transparent; border: none; cursor: pointer; transition: 0.2s; font-size: calc(var(--base-font-size) * 0.9); }
+        .mode-btn.active { background: #ffaa44; color: white; }
+        .question-card { background: white; border-radius: 28px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid #edf2f7; }
+        .question-text { font-size: calc(var(--base-font-size) * 1.25); font-weight: 600; line-height: 1.4; margin-bottom: 20px; }
+        .option { background: #f8fafc; border-radius: 60px; padding: 12px 18px; margin: 10px 0; border: 1px solid #e2e8f0; cursor: pointer; display: flex; align-items: center; gap: 12px; font-size: calc(var(--base-font-size) * 0.9); transition: background 0.2s; }
+        .option.selected { background: #eef2ff; border-color: #2c3e66; }
+        .option.correct-highlight { background: #d4edda !important; border-color: #28a745 !important; }
+        .option.wrong-highlight { background: #f8d7da !important; border-color: #dc3545 !important; }
+        .option-prefix { font-weight: 800; width: 28px; }
+        .option-icon { margin-left: auto; font-weight: bold; }
+        .option-icon.correct { color: #28a745; }
+        .option-icon.wrong { color: #dc3545; }
+        .btn-group { display: flex; gap: 12px; margin-top: 20px; }
+        .btn { flex: 1; padding: 12px; border-radius: 60px; font-weight: 600; border: none; cursor: pointer; background: #e9ecef; transition: 0.2s; font-size: calc(var(--base-font-size) * 0.9); }
+        .btn-primary { background: #2c3e66; color: white; }
+        .btn-warning { background: #ffaa44; color: #2c3e66; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .feedback { margin-top: 16px; padding: 14px; border-radius: 20px; background: #fef9e6; font-size: calc(var(--base-font-size) * 0.9); border-left: 5px solid #ffaa44; }
+        .feedback.correct { background: #e6f7e6; border-left-color: #28a745; }
+        .feedback.wrong { background: #fee; border-left-color: #dc3545; }
+        .rank-card { background: #fef9ef; border-radius: 24px; padding: 16px; margin-bottom: 20px; }
+        .rank-title { font-weight: bold; margin-bottom: 12px; font-size: calc(var(--base-font-size) * 1.1); display: flex; justify-content: space-between; }
+        .rank-list { list-style: none; }
+        .rank-list li { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #ede5d2; font-size: calc(var(--base-font-size) * 0.9); }
+        .post-card { background: white; border-radius: 20px; padding: 14px; margin-bottom: 16px; border: 1px solid #e2e8f0; }
+        .post-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+        .post-avatar { font-size: calc(var(--base-font-size) * 1.5); }
+        .post-name { font-weight: 600; font-size: calc(var(--base-font-size) * 0.9); }
+        .post-time { font-size: calc(var(--base-font-size) * 0.7); color: #888; margin-left: auto; }
+        .post-content { margin-left: 32px; font-size: calc(var(--base-font-size) * 0.9); line-height: 1.4; }
+        .post-actions { margin-top: 10px; margin-left: 32px; display: flex; gap: 16px; align-items: center; }
+        .action-btn { background: none; border: none; cursor: pointer; font-size: calc(var(--base-font-size) * 0.85); color: #6c757d; display: flex; align-items: center; gap: 4px; }
+        .action-btn:hover { color: #ffaa44; }
+        .comments-section { margin-top: 12px; margin-left: 32px; background: #f8f9fa; border-radius: 16px; padding: 8px 12px; }
+        .comment-item { font-size: calc(var(--base-font-size) * 0.8); padding: 6px 0; border-bottom: 1px solid #e9ecef; display: flex; justify-content: space-between; align-items: flex-start; }
+        .comment-content { flex: 1; }
+        .comment-name { font-weight: 600; margin-right: 6px; }
+        .comment-time { font-size: calc(var(--base-font-size) * 0.65); color: #aaa; margin-left: 8px; }
+        .comment-delete { background: none; border: none; color: #dc3545; cursor: pointer; font-size: calc(var(--base-font-size) * 0.75); margin-left: 8px; }
+        .add-comment { display: flex; gap: 8px; margin-top: 8px; }
+        .add-comment input { flex: 1; padding: 6px 12px; border-radius: 30px; border: 1px solid #ddd; font-size: calc(var(--base-font-size) * 0.8); }
+        .btn-sm { padding: 6px 12px; font-size: calc(var(--base-font-size) * 0.75); }
+        .admin-panel { background: #f1f5f9; border-radius: 24px; padding: 16px; margin-top: 20px; }
+        .admin-section { margin-bottom: 24px; }
+        input, textarea, select { width: 100%; padding: 10px; border-radius: 30px; border: 1px solid #ccc; margin: 6px 0; font-size: calc(var(--base-font-size) * 0.9); }
+        .student-item, .question-item, .feedback-item, .material-item, .scratch-record-item, .comment-admin-item { background: white; padding: 8px 12px; border-radius: 40px; margin: 6px 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; font-size: calc(var(--base-font-size) * 0.85); }
+        .small-btn { background: #dc3545; color: white; border: none; padding: 4px 12px; border-radius: 30px; font-size: calc(var(--base-font-size) * 0.75); cursor: pointer; }
+        .small-success { background: #28a745; }
+        hr { margin: 15px 0; }
+        .login-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 1000; display: flex; align-items: center; justify-content: center; overflow-y: auto; }
+        .login-card { background: white; width: 90%; max-width: 450px; border-radius: 40px; padding: 24px; max-height: 90vh; overflow-y: auto; }
+        .error-msg { color: #e74c3c; font-size: calc(var(--base-font-size) * 0.8); margin-top: 8px; text-align: center; }
+        .tab-login { display: flex; gap: 10px; margin-bottom: 20px; }
+        .login-tab { flex: 1; text-align: center; padding: 8px; background: #e9ecef; border-radius: 30px; cursor: pointer; font-size: calc(var(--base-font-size) * 0.9); }
+        .login-tab.active { background: #2c3e66; color: white; }
+        .scroll-msg { background: #ffaa44; color: #2c3e66; padding: 8px; border-radius: 40px; margin-bottom: 12px; overflow: hidden; white-space: nowrap; font-weight: bold; animation: scrollMsg 20s linear infinite; font-size: calc(var(--base-font-size) * 0.9); }
+        @keyframes scrollMsg { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+        .my-menu { display: flex; gap: 12px; margin-bottom: 16px; }
+        .my-btn { flex: 1; background: #f0f2f5; border: none; padding: 10px; border-radius: 40px; font-weight: bold; cursor: pointer; font-size: calc(var(--base-font-size) * 0.9); }
+        .my-btn.active { background: #ffaa44; color: white; }
+        .avatar-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin: 15px 0; max-height: 200px; overflow-y: auto; }
+        .avatar-option { font-size: calc(var(--base-font-size) * 2); text-align: center; cursor: pointer; padding: 8px; border-radius: 20px; transition: 0.1s; }
+        .avatar-option.selected { background: #ffaa44; transform: scale(1.05); }
+        .avatar-option.disabled { opacity: 0.5; cursor: not-allowed; }
+        .wrongbook-item { background: white; border-radius: 20px; padding: 12px; margin-bottom: 10px; border: 1px solid #e2e8f0; font-size: calc(var(--base-font-size) * 0.9); }
+        .material-card { background: #f8fafc; border-radius: 20px; padding: 16px; margin-bottom: 16px; border-left: 5px solid #ffaa44; }
+        .material-title { font-weight: bold; font-size: calc(var(--base-font-size) * 1.1); margin-bottom: 8px; }
+        .material-content { margin: 12px 0; line-height: 1.5; font-size: calc(var(--base-font-size) * 0.9); }
+        .material-analysis { background: #eef2ff; padding: 12px; border-radius: 16px; margin-top: 8px; font-size: calc(var(--base-font-size) * 0.9); }
+        .stat-card { background: white; border-radius: 20px; padding: 12px; margin-bottom: 12px; text-align: center; font-weight: bold; color: #2c3e66; font-size: calc(var(--base-font-size) * 0.9); }
+        .font-slider { margin: 12px 0; display: flex; align-items: center; gap: 12px; }
+        .font-slider label { font-size: calc(var(--base-font-size) * 0.9); }
+        input[type="range"] { flex: 1; }
+        .music-control { background: #f0f2f5; border-radius: 40px; padding: 10px; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .music-control button, .music-control label { background: none; border: none; font-size: 0.9rem; cursor: pointer; }
+        .scratch-record-item { background: #fff3e0; }
+    </style>
+</head>
+<body>
+<div id="root"></div>
+
+<script>
+    // ===================== 数据模型 =====================
+    let db = {
+        students: [],
+        admins: [{ id: "a1", name: "管理员", password: "admin123" }],
+        questions: [],
+        materialQuestions: [],
+        prizes: [],
+        dropSettings: { ticketDropRate: 0.2 },
+        posts: [],
+        feedbacks: [],
+        scratchRecords: [],
+        globalMessages: [],
+        fontSize: 16
+    };
+
+    // 默认数据
+    function initDefaultData() {
+        if (db.questions.length === 0) {
+            db.questions = [
+                { id: 1, text: "JavaScript中声明常量的关键字是？", options: ["var", "let", "const", "static"], answerIndex: 2, explanation: "const 声明常量，不可重新赋值。" },
+                { id: 2, text: "以下哪个是HTML5新增的语义化标签？", options: ["<div>", "<span>", "<article>", "<b>"], answerIndex: 2, explanation: "<article> 是HTML5语义标签。" },
+                { id: 3, text: "CSS中，设置文字颜色的是？", options: ["color", "font-color", "text-color", "bgcolor"], answerIndex: 0, explanation: "color 属性用于设置文字颜色。" },
+                { id: 4, text: "HTTP状态码404表示？", options: ["成功", "未找到资源", "服务器错误", "禁止访问"], answerIndex: 1, explanation: "404 Not Found。" },
+                { id: 5, text: "Python中哪个关键字用于定义函数？", options: ["func", "define", "def", "function"], answerIndex: 2, explanation: "def 用于定义函数。" }
+            ];
+        }
+        if (db.materialQuestions.length === 0) {
+            db.materialQuestions = [
+                { id: "m1", title: "材料一：JavaScript闭包", content: "闭包是指有权访问另一个函数作用域中变量的函数。创建闭包的常见方式是在一个函数内部创建另一个函数。", analysis: "闭包可以访问外部函数的变量，即使外部函数已返回。常用于数据封装和模块化。" },
+                { id: "m2", title: "材料二：HTTP协议", content: "HTTP是无状态协议，基于请求-响应模型。常见的请求方法有GET、POST、PUT、DELETE等。", analysis: "无状态意味着服务器不会保留客户端的状态信息，每次请求都是独立的。Cookie和Session用于维持状态。" }
+            ];
+        }
+        if (db.students.length === 0) {
+            const now = new Date();
+            const ym = `${now.getFullYear()}-${now.getMonth()+1}`;
+            db.students = [
+                { id: "s1", name: "小明", password: "000000", avatar: "🐱", totalQ: 45, correct: 38, scratchCoupons: 1, rankRewardFlag: false, wrongQuestions: [], lastResetMonth: ym, avatarFixed: true },
+                { id: "s2", name: "小红", password: "000000", avatar: "🐰", totalQ: 32, correct: 27, scratchCoupons: 0, rankRewardFlag: false, wrongQuestions: [], lastResetMonth: ym, avatarFixed: true },
+                { id: "s3", name: "小智", password: "000000", avatar: "🦊", totalQ: 89, correct: 72, scratchCoupons: 2, rankRewardFlag: false, wrongQuestions: [], lastResetMonth: ym, avatarFixed: true }
+            ];
+        }
+        if (db.prizes.length === 0) {
+            db.prizes = [
+                { name: "🎁 精美笔记本", probability: 0.3 },
+                { name: "🍬 糖果礼包", probability: 0.25 },
+                { name: "⭐ 星星徽章", probability: 0.2 },
+                { name: "📘 电子书券", probability: 0.15 },
+                { name: "🧸 毛绒玩偶", probability: 0.1 }
+            ];
+        }
+        if (db.posts.length === 0) {
+            db.posts = [
+                { id: "p1", studentId: "s1", studentName: "小明", studentAvatar: "🐱", content: "今天刷了20道题，进步好大！", timestamp: Date.now() - 3600000, likes: [], comments: [] }
+            ];
+        }
+        saveToLocal();
+    }
+
+    function saveToLocal() { localStorage.setItem("quiz_advanced", JSON.stringify(db)); }
+    function loadFromLocal() {
+        let data = localStorage.getItem("quiz_advanced");
+        if (data) {
+            try {
+                let parsed = JSON.parse(data);
+                db = { ...db, ...parsed };
+                db.students.forEach(s => { if (!s.wrongQuestions) s.wrongQuestions = []; if (!s.avatarFixed) s.avatarFixed = true; });
+                db.posts.forEach(p => { if (!p.likes) p.likes = []; if (!p.comments) p.comments = []; });
+                if (!db.scratchRecords) db.scratchRecords = [];
+            } catch(e) { console.error(e); }
+        }
+        initDefaultData();
+        document.documentElement.style.setProperty('--base-font-size', db.fontSize + 'px');
+    }
+
+    // 辅助函数
+    let audioCtx = null, musicGain = null, musicSource = null, musicBuffer = null, musicPlaying = false, userMusicUrl = null;
+    function generateLongMelody() {
+        if (!audioCtx) return null;
+        const sampleRate = audioCtx.sampleRate;
+        const duration = 30;
+        const buffer = audioCtx.createBuffer(1, sampleRate * duration, sampleRate);
+        const data = buffer.getChannelData(0);
+        const notes = { C4:261.63, D4:293.66, E4:329.63, F4:349.23, G4:392.00, A4:440.00, B4:493.88, C5:523.25 };
+        const melody = [
+            [notes.C4,0.4],[notes.E4,0.4],[notes.G4,0.4],[notes.C5,0.6],
+            [notes.G4,0.4],[notes.E4,0.4],[notes.C4,0.6],
+            [notes.D4,0.4],[notes.F4,0.4],[notes.A4,0.4],[notes.D5,0.6],
+            [notes.A4,0.4],[notes.F4,0.4],[notes.D4,0.6],
+            [notes.E4,0.4],[notes.G4,0.4],[notes.B4,0.4],[notes.E5,0.6],
+            [notes.B4,0.4],[notes.G4,0.4],[notes.E4,0.6],
+            [notes.F4,0.4],[notes.A4,0.4],[notes.C5,0.4],[notes.F5,0.6],
+            [notes.C5,0.4],[notes.A4,0.4],[notes.F4,0.6],
+            [notes.G4,0.8],[notes.A4,0.8],[notes.B4,0.8],[notes.C5,1.0]
+        ];
+        let time = 0;
+        for (let [freq, dur] of melody) {
+            const samples = Math.floor(dur * sampleRate);
+            const start = Math.floor(time * sampleRate);
+            for (let i = 0; i < samples; i++) {
+                const t = i / sampleRate;
+                const env = Math.exp(-t * 2);
+                const val = Math.sin(2 * Math.PI * freq * t) * env;
+                if (start + i < data.length) data[start + i] += val * 0.3;
+            }
+            time += dur;
+        }
+        return buffer;
+    }
+    function playMusicBuffer() {
+        if (!musicBuffer || !audioCtx || !musicGain) return;
+        if (musicSource) try { musicSource.stop(); } catch(e) {}
+        musicSource = audioCtx.createBufferSource();
+        musicSource.buffer = musicBuffer;
+        musicSource.loop = true;
+        musicSource.connect(musicGain);
+        musicSource.start();
+        musicPlaying = true;
+    }
+    function initMusic() {
+        if (musicPlaying) return;
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            musicGain = audioCtx.createGain();
+            musicGain.gain.value = 0.3;
+            musicGain.connect(audioCtx.destination);
+        }
+        if (userMusicUrl) {
+            fetch(userMusicUrl).then(r => r.arrayBuffer()).then(buf => audioCtx.decodeAudioData(buf)).then(decoded => {
+                musicBuffer = decoded;
+                playMusicBuffer();
+            }).catch(e => console.error("用户音乐加载失败", e));
+        } else {
+            if (!musicBuffer) musicBuffer = generateLongMelody();
+            playMusicBuffer();
+        }
+    }
+    function stopMusic() { if (musicSource) try { musicSource.stop(); } catch(e) {} musicSource = null; musicPlaying = false; }
+    function toggleMusic() { if (musicPlaying) stopMusic(); else initMusic(); }
+    function setMusicVolume(v) { if (musicGain) musicGain.gain.value = v; }
+    function uploadUserMusic(file) {
+        const url = URL.createObjectURL(file);
+        userMusicUrl = url;
+        if (!audioCtx) { audioCtx = new AudioContext(); musicGain = audioCtx.createGain(); musicGain.gain.value = 0.3; musicGain.connect(audioCtx.destination); }
+        fetch(url).then(r => r.arrayBuffer()).then(buf => audioCtx.decodeAudioData(buf)).then(decoded => {
+            musicBuffer = decoded;
+            if (musicPlaying) { stopMusic(); playMusicBuffer(); }
+        }).catch(e => alert("音乐文件加载失败"));
+    }
+
+    function playSound(type) {
+        if (!audioCtx) { audioCtx = new AudioContext(); musicGain = audioCtx.createGain(); musicGain.gain.value = 0.3; musicGain.connect(audioCtx.destination); }
+        const gain = audioCtx.createGain(); gain.gain.value = 0.3; gain.connect(audioCtx.destination);
+        if (type === 'victory') {
+            const notes = [523, 659, 784, 1046];
+            notes.forEach((freq, i) => {
+                const osc = audioCtx.createOscillator();
+                osc.type = 'sine';
+                osc.frequency.value = freq;
+                osc.connect(gain);
+                osc.start(audioCtx.currentTime + i * 0.12);
+                osc.stop(audioCtx.currentTime + i * 0.12 + 0.2);
+            });
+        } else {
+            const start = 880, end = 220, dur = 0.5;
+            const osc = audioCtx.createOscillator();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(start, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(end, audioCtx.currentTime + dur);
+            osc.connect(gain);
+            osc.start();
+            osc.stop(audioCtx.currentTime + dur);
+        }
+    }
+
+    function addGlobalMessage(msg) { db.globalMessages.unshift({ text: msg, time: Date.now() }); if (db.globalMessages.length > 20) db.globalMessages.pop(); saveToLocal(); updateScrollMessage(); }
+    function updateScrollMessage() {
+        let msgDiv = document.getElementById("scrollMsg");
+        if (!msgDiv) return;
+        let top3 = [...db.students].sort((a,b)=>b.totalQ-a.totalQ).slice(0,3);
+        msgDiv.innerText = "🏆 刷题榜前三名：" + top3.map((s,i)=>`${i+1}. ${s.avatar} ${s.name} (${s.totalQ}题)`).join("  ");
+    }
+    function tryDropTicket() {
+        if (!currentStudent) return;
+        if (Math.random() < db.dropSettings.ticketDropRate) {
+            currentStudent.scratchCoupons = (currentStudent.scratchCoupons || 0) + 1;
+            saveToLocal();
+            addGlobalMessage(`${currentStudent.name} 刷题时掉落了一张刮奖券！`);
+        }
+    }
+    function addScratchRecord(prize) {
+        db.scratchRecords.unshift({ studentId: currentStudent.id, studentName: currentStudent.name, studentAvatar: currentStudent.avatar, prize, timestamp: Date.now() });
+        if (db.scratchRecords.length > 200) db.scratchRecords.pop();
+        saveToLocal();
+    }
+    function doScratch() {
+        if (!currentStudent) return;
+        if (currentStudent.scratchCoupons <= 0) { alert("没有刮奖券"); return; }
+        let total = db.prizes.reduce((s,p)=>s+p.probability,0);
+        let rand = Math.random() * total, acc = 0, selected = db.prizes[0];
+        for (let p of db.prizes) { acc += p.probability; if (rand <= acc) { selected = p; break; } }
+        currentStudent.scratchCoupons--;
+        saveToLocal();
+        addGlobalMessage(`${currentStudent.name} 刮中 ${selected.name}！`);
+        addScratchRecord(selected.name);
+        alert(`🎉 恭喜获得：${selected.name}`);
+    }
+    function addToWrongbook() {
+        if (!currentStudent || !currentQuestion) return;
+        if (currentStudent.wrongQuestions.some(w => w.id === currentQuestion.id)) alert("已在错题本");
+        else {
+            currentStudent.wrongQuestions.push({ id: currentQuestion.id, text: currentQuestion.text, options: [...currentQuestion.options], correctAnswer: currentQuestion.options[currentQuestion.answerIndex], explanation: currentQuestion.explanation });
+            saveToLocal();
+            alert("已加入错题本");
+        }
+    }
+    function reportErrorFeedback() {
+        let content = prompt("请描述题目错误（可附题目文本）：");
+        if (content) {
+            db.feedbacks.unshift({ id: Date.now()+Math.random(), studentId: currentStudent.id, studentName: currentStudent.name, studentAvatar: currentStudent.avatar, content, type: 'error', timestamp: Date.now(), isRead: false });
+            saveToLocal();
+            alert("反馈已发送给管理员");
+        }
+    }
+    function answerQuestion(isCorrect, q, idx) {
+        currentStudent.totalQ++;
+        if (isCorrect) currentStudent.correct++;
+        saveToLocal();
+        tryDropTicket();
+        updateRankRewards();
+        if (currentStudent.totalQ % 10 === 0) addGlobalMessage(`${currentStudent.name} 累计刷题 ${currentStudent.totalQ} 道！`);
+        playSound(isCorrect ? 'victory' : 'death');
+        updateScrollMessage();
+    }
+    function updateRankRewards() {
+        let top3 = [...db.students].sort((a,b)=>b.totalQ-a.totalQ).slice(0,3);
+        for (let s of top3) if (s.id === currentStudent?.id && !s.rankRewardFlag) {
+            s.scratchCoupons++; s.rankRewardFlag = true; saveToLocal();
+            addGlobalMessage(`${s.name} 荣登排行榜，获得1张刮奖券！`);
+        }
+    }
+    function getRandomQuestion() { if (!db.questions.length) return null; return { ...db.questions[Math.floor(Math.random() * db.questions.length)] }; }
+    function practiceWrongbook() {
+        if (!currentStudent.wrongQuestions.length) alert("错题本为空");
+        else {
+            let w = currentStudent.wrongQuestions[Math.floor(Math.random() * currentStudent.wrongQuestions.length)];
+            currentQuestion = { id: w.id, text: w.text, options: w.options, answerIndex: w.options.indexOf(w.correctAnswer), explanation: w.explanation };
+            selectedOptionIndex = null; feedbackMsg = null; activeTab = "quiz";
+            document.querySelector(".tab.active").classList.remove("active");
+            document.querySelector(".tab[data-tab='quiz']").classList.add("active");
+            renderQuizView();
+        }
+    }
+    function removeWrongbookItem(id) { currentStudent.wrongQuestions = currentStudent.wrongQuestions.filter(w => w.id !== id); saveToLocal(); renderMyView(); }
+    function likePost(postId) {
+        let p = db.posts.find(p => p.id === postId);
+        if (!p) return;
+        if (p.likes.includes(currentStudent.id)) alert("已经点过赞");
+        else { p.likes.push(currentStudent.id); saveToLocal(); tryDropTicket(); renderHomeView(); }
+    }
+    function addComment(postId, content) {
+        let p = db.posts.find(p => p.id === postId);
+        if (p && content.trim()) {
+            p.comments.push({ id: Date.now()+Math.random(), studentId: currentStudent.id, studentName: currentStudent.name, studentAvatar: currentStudent.avatar, content: content.trim(), timestamp: Date.now() });
+            saveToLocal(); tryDropTicket(); renderHomeView();
+        }
+    }
+    function deleteComment(commentId) {
+        if (!currentAdmin) { alert("仅管理员可删除"); return; }
+        for (let p of db.posts) {
+            let idx = p.comments.findIndex(c => c.id == commentId);
+            if (idx !== -1) { p.comments.splice(idx,1); saveToLocal(); renderHomeView(); break; }
+        }
+    }
+    function checkMonthlyReset() {
+        if (!currentStudent) return;
+        let now = new Date(), ym = `${now.getFullYear()}-${now.getMonth()+1}`;
+        if (currentStudent.lastResetMonth !== ym) {
+            currentStudent.totalQ = 0; currentStudent.correct = 0; currentStudent.scratchCoupons = 0; currentStudent.rankRewardFlag = false;
+            currentStudent.lastResetMonth = ym; saveToLocal();
+            alert("新的一月！刷题数据已重置，加油！");
+            addGlobalMessage(`${currentStudent.name} 迎来新的一月，数据已重置。`);
+        }
+    }
+
+    let currentStudent = null, currentAdmin = null, currentMode = "practice", currentQuestion = null, selectedOptionIndex = null, feedbackMsg = null, feedbackType = null, activeTab = "home", mySubTab = "scratch";
+    const avatarList = ["🐱","🐶","🐭","🐹","🐰","🦊","🐻","🐼","🐨","🐯","🦁","🐮","🐷","🐸","🐵","🐔","🐧","🐦","🐴","🐺","🐝","🐛","🐌","🐞","🐟","🐠","🐡","🐙","🦋","🌻"];
+
+    // 渲染函数
+    function renderHomeView() {
+        if (!currentStudent) return;
+        let total = [...db.students].sort((a,b)=>b.totalQ-a.totalQ);
+        let rate = [...db.students].sort((a,b)=>(b.correct/(b.totalQ||1)) - (a.correct/(a.totalQ||1)));
+        let rankHtml = `<div class="rank-card"><div class="rank-title">📊 刷题量榜</div><ul class="rank-list">${total.slice(0,5).map((s,i)=>`<li><span>${i+1}. ${s.avatar} ${s.name}</span><span>${s.totalQ}题</span></li>`).join('')}</ul></div>
+            <div class="rank-card"><div class="rank-title">🏅 正确率榜</div><ul class="rank-list">${rate.slice(0,5).map(s=>{let r=s.totalQ?((s.correct/s.totalQ)*100).toFixed(1):0;return `<li><span>${s.avatar} ${s.name}</span><span>${r}%</span></li>`;}).join('')}</ul></div>`;
+        let postsHtml = `<div class="rank-card"><div class="rank-title">💬 同学圈</div><textarea id="newPost" rows="2" placeholder="分享成就..."></textarea><button id="publishPost" class="btn-primary">发布</button><div id="postsList">`;
+        db.posts.slice(0,30).forEach(p => {
+            let time = new Date(p.timestamp).toLocaleString();
+            postsHtml += `<div class="post-card"><div class="post-header"><span class="post-avatar">${p.studentAvatar}</span><span class="post-name">${p.studentName}</span><span class="post-time">${time}</span></div><div class="post-content">${escapeHtml(p.content)}</div>
+                <div class="post-actions"><button class="action-btn like-btn" data-post="${p.id}">❤️ ${p.likes.length}</button><button class="action-btn comment-btn" data-post="${p.id}">💬 ${p.comments.length}</button></div>
+                <div class="comments-section" id="comments-${p.id}" style="display:none;"><div class="comments-list">`;
+            p.comments.slice().reverse().forEach(c => {
+                let ct = new Date(c.timestamp).toLocaleString();
+                postsHtml += `<div class="comment-item"><div><span class="comment-name">${c.studentAvatar} ${c.studentName}</span>${escapeHtml(c.content)}<span class="comment-time">${ct}</span></div>${currentAdmin ? `<button class="comment-delete" data-comment="${c.id}">删除</button>` : ''}</div>`;
+            });
+            postsHtml += `</div><div class="add-comment"><input type="text" id="comment-input-${p.id}" placeholder="写评论..."><button class="btn-sm" data-post-comment="${p.id}">发送</button></div></div></div>`;
+        });
+        postsHtml += `</div></div>`;
+        document.getElementById("contentArea").innerHTML = rankHtml + postsHtml;
+        document.getElementById("publishPost")?.addEventListener("click",()=>{
+            let c = document.getElementById("newPost").value.trim();
+            if(c) { db.posts.unshift({ id: Date.now()+Math.random(), studentId: currentStudent.id, studentName: currentStudent.name, studentAvatar: currentStudent.avatar, content: c, timestamp: Date.now(), likes: [], comments: [] }); saveToLocal(); renderHomeView(); }
+        });
+        document.querySelectorAll(".like-btn").forEach(b=>b.addEventListener("click",()=>likePost(b.dataset.post)));
+        document.querySelectorAll(".comment-btn").forEach(b=>b.addEventListener("click",()=>{ let d=document.getElementById(`comments-${b.dataset.post}`); d.style.display = d.style.display==="none"?"block":"none"; }));
+        document.querySelectorAll("[data-post-comment]").forEach(b=>b.addEventListener("click",()=>{ let id=b.dataset.postComment; let inp=document.getElementById(`comment-input-${id}`); if(inp.value.trim()){ addComment(id, inp.value); inp.value=""; } }));
+        document.querySelectorAll(".comment-delete").forEach(b=>b.addEventListener("click",()=>deleteComment(b.dataset.comment)));
+    }
+
+    function renderQuizView() {
+        if (!currentStudent) return;
+        if (!currentQuestion) currentQuestion = getRandomQuestion();
+        let optsHtml = "";
+        let correctIdx = currentQuestion.answerIndex;
+        let answered = feedbackMsg !== null;
+        currentQuestion.options.forEach((opt, idx) => {
+            let cls = selectedOptionIndex === idx ? "selected" : "";
+            if (answered) {
+                if (idx === correctIdx) cls += " correct-highlight";
+                else if (idx === selectedOptionIndex && idx !== correctIdx) cls += " wrong-highlight";
+            }
+            let icon = "";
+            if (answered) {
+                if (idx === correctIdx) icon = '<span class="option-icon correct">✓</span>';
+                else if (idx === selectedOptionIndex && idx !== correctIdx) icon = '<span class="option-icon wrong">✗</span>';
+            }
+            optsHtml += `<div class="option ${cls}" data-opt="${idx}"><span class="option-prefix">${String.fromCharCode(65+idx)}.</span><span>${escapeHtml(opt)}</span>${icon}</div>`;
+        });
+        let fbHtml = feedbackMsg ? `<div class="feedback ${feedbackType}">${escapeHtml(feedbackMsg).replace(/\n/g,'<br>')}</div>` : "";
+        let html = `<div class="mode-switch"><button class="mode-btn ${currentMode==='practice'?'active':''}" data-mode="practice">练习</button><button class="mode-btn ${currentMode==='challenge'?'active':''}" data-mode="challenge">挑战</button></div>
+            <div class="question-card"><div class="question-text">${escapeHtml(currentQuestion.text)}</div>${optsHtml}
+            <div class="btn-group"><button id="submitBtn" class="btn btn-primary">提交</button><button id="nextBtn" class="btn">下一题</button><button id="addWrongBtn" class="btn btn-secondary">📚 加入错题本</button></div>${fbHtml}</div>`;
+        document.getElementById("contentArea").innerHTML = html;
+        document.querySelectorAll('.option').forEach(el=>el.addEventListener("click",()=>{ if(!feedbackMsg) { selectedOptionIndex = parseInt(el.dataset.opt); renderQuizView(); } }));
+        document.getElementById("submitBtn")?.addEventListener("click",()=>{
+            if(feedbackMsg) return;
+            if(selectedOptionIndex===null) { alert("请选择答案"); return; }
+            let isCorrect = selectedOptionIndex === currentQuestion.answerIndex;
+            let correctOpt = currentQuestion.options[currentQuestion.answerIndex];
+            if(currentMode === "practice") {
+                feedbackMsg = isCorrect ? `✅ 正确！解析：${currentQuestion.explanation}` : `❌ 错误！正确答案：${correctOpt}\n解析：${currentQuestion.explanation}`;
+                feedbackType = isCorrect ? "correct" : "wrong";
+            } else {
+                if(isCorrect) { feedbackMsg = "✅ 挑战成功！"; feedbackType = "correct"; }
+                else { feedbackMsg = `❌ 挑战失败！正确答案：${correctOpt}\n解析：${currentQuestion.explanation}`; feedbackType = "wrong"; }
+            }
+            answerQuestion(isCorrect, currentQuestion, selectedOptionIndex);
+            renderQuizView();
+        });
+        document.getElementById("nextBtn")?.addEventListener("click",()=>{ currentQuestion = getRandomQuestion(); selectedOptionIndex = null; feedbackMsg = null; renderQuizView(); });
+        document.getElementById("addWrongBtn")?.addEventListener("click", addToWrongbook);
+        document.querySelectorAll(".mode-btn").forEach(b=>b.addEventListener("click",()=>{ currentMode = b.dataset.mode; renderQuizView(); }));
+    }
+
+    function renderMaterialView() {
+        let html = `<div class="rank-card"><div class="rank-title">📄 材料题练习区</div>`;
+        db.materialQuestions.forEach(m=>{ html += `<div class="material-card"><div class="material-title">${escapeHtml(m.title)}</div><div class="material-content">${escapeHtml(m.content)}</div><div class="material-analysis">📖 解析：${escapeHtml(m.analysis)}</div></div>`; });
+        html += `</div>`;
+        document.getElementById("contentArea").innerHTML = html;
+    }
+
+    function renderRankView() {
+        let total = [...db.students].sort((a,b)=>b.totalQ-a.totalQ);
+        let rate = [...db.students].sort((a,b)=>(b.correct/(b.totalQ||1)) - (a.correct/(a.totalQ||1)));
+        let myTotal = total.findIndex(s=>s.id===currentStudent.id)+1;
+        let myRate = rate.findIndex(s=>s.id===currentStudent.id)+1;
+        let html = `<div class="rank-card"><div class="rank-title">📊 刷题量榜 (前十)</div><ul class="rank-list">${total.slice(0,10).map((s,i)=>`<li><span>${i+1}. ${s.avatar} ${s.name}</span><span>${s.totalQ}题</span></li>`).join('')}</ul><div>🏅 你的排名：${myTotal||'未上榜'}</div></div>
+            <div class="rank-card"><div class="rank-title">🏅 正确率榜 (前十)</div><ul class="rank-list">${rate.slice(0,10).map(s=>{let r=s.totalQ?((s.correct/s.totalQ)*100).toFixed(1):0;return `<li><span>${s.avatar} ${s.name}</span><span>${r}%</span></li>`;}).join('')}</ul><div>🏅 你的排名：${myRate||'未上榜'}</div></div>`;
+        document.getElementById("contentArea").innerHTML = html;
+    }
+
+    function renderMyView() {
+        let html = `<div class="my-menu"><button class="my-btn ${mySubTab==='scratch'?'active':''}" data-sub="scratch">🎁 刮奖</button><button class="my-btn ${mySubTab==='wrongbook'?'active':''}" data-sub="wrongbook">📖 错题本</button></div>`;
+        if(mySubTab === "scratch") {
+            html += `<div class="rank-card"><div class="rank-title">🎫 我的刮奖券</div><div>当前拥有: ${currentStudent.scratchCoupons} 张</div><button id="scratchBtn" class="btn-primary">🎁 立即刮奖</button></div>`;
+        } else {
+            let wrongs = currentStudent.wrongQuestions || [];
+            if(wrongs.length === 0) html += `<div class="rank-card">暂无错题，刷题时可点击「加入错题本」</div>`;
+            else html += `<div class="rank-card"><div class="rank-title">错题本 (${wrongs.length}题)</div><button id="practiceWrongBtn" class="btn-primary">🚀 一键练习错题</button>${wrongs.map(w=>`<div class="wrongbook-item"><div><strong>${escapeHtml(w.text)}</strong></div><div>正确答案: ${w.correctAnswer}</div><div>解析: ${w.explanation}</div><button class="small-btn remove-wrong" data-id="${w.id}">删除</button></div>`).join('')}</div>`;
+        }
+        html += `<div class="rank-card"><div class="rank-title">🎵 背景音乐</div>
+            <div class="music-control"><button id="toggleMusicBtn">${musicPlaying?'⏸️ 暂停':'▶️ 播放'}</button><input type="range" id="musicVolume" min="0" max="1" step="0.01" value="${musicGain?musicGain.gain.value:0.3}"><span id="musicVolumeVal">${Math.round((musicGain?musicGain.gain.value:0.3)*100)}%</span><label><input type="file" id="uploadMusic" accept="audio/*">上传音乐</label></div>
+            </div>
+            <div class="rank-card"><div class="rank-title">📢 反馈题目错误</div><button id="reportErrorBtn" class="btn-warning">⚠️ 发现错误</button></div>
+            <div class="rank-card"><div class="rank-title">⚙️ 设置</div><div class="font-slider"><label>字体大小</label><input type="range" id="fontSlider" min="12" max="24" step="1" value="${db.fontSize}"><span id="fontVal">${db.fontSize}px</span></div><button id="resetFont" class="btn-secondary">重置</button></div>
+            <div class="rank-card"><div class="rank-title">🔒 修改密码</div><input type="password" id="oldPwd" placeholder="原密码"><input type="password" id="newPwd" placeholder="新密码"><input type="password" id="confirmPwd" placeholder="确认密码"><button id="changePwdBtn" class="btn-primary">确认修改</button></div>`;
+        document.getElementById("contentArea").innerHTML = html;
+        document.getElementById("scratchBtn")?.addEventListener("click",()=>{ doScratch(); renderMyView(); });
+        document.getElementById("practiceWrongBtn")?.addEventListener("click", practiceWrongbook);
+        document.querySelectorAll(".remove-wrong").forEach(b=>b.addEventListener("click",()=>removeWrongbookItem(b.dataset.id)));
+        document.querySelectorAll(".my-btn").forEach(b=>b.addEventListener("click",()=>{ mySubTab=b.dataset.sub; renderMyView(); }));
+        document.getElementById("toggleMusicBtn")?.addEventListener("click",()=>{ toggleMusic(); document.getElementById("toggleMusicBtn").innerText = musicPlaying?"⏸️ 暂停":"▶️ 播放"; });
+        document.getElementById("musicVolume")?.addEventListener("input",e=>{ let v=parseFloat(e.target.value); setMusicVolume(v); document.getElementById("musicVolumeVal").innerText=Math.round(v*100)+"%"; });
+        document.getElementById("uploadMusic")?.addEventListener("change",e=>{ if(e.target.files[0]) uploadUserMusic(e.target.files[0]); });
+        document.getElementById("reportErrorBtn")?.addEventListener("click", reportErrorFeedback);
+        let fs = document.getElementById("fontSlider"), fv = document.getElementById("fontVal");
+        fs.addEventListener("input",()=>{ let v=fs.value; db.fontSize=v; document.documentElement.style.setProperty('--base-font-size',v+'px'); fv.innerText=v+'px'; saveToLocal(); });
+        document.getElementById("resetFont")?.addEventListener("click",()=>{ db.fontSize=16; document.documentElement.style.setProperty('--base-font-size','16px'); fs.value=16; fv.innerText='16px'; saveToLocal(); });
+        document.getElementById("changePwdBtn")?.addEventListener("click",()=>{
+            let old=document.getElementById("oldPwd").value, newp=document.getElementById("newPwd").value, con=document.getElementById("confirmPwd").value;
+            if(!old||!newp) alert("请填写完整");
+            else if(newp!==con) alert("两次密码不一致");
+            else if(currentStudent.password!==old) alert("原密码错误");
+            else { currentStudent.password=newp; saveToLocal(); alert("密码修改成功"); document.getElementById("oldPwd").value=""; document.getElementById("newPwd").value=""; document.getElementById("confirmPwd").value=""; }
+        });
+    }
+
+    function renderAdminPanel() {
+        let totalAll = db.students.reduce((s,p)=>s+p.totalQ,0);
+        let avg = db.students.length ? (totalAll/db.students.length).toFixed(1) : 0;
+        let html = `<div class="admin-panel"><div class="stat-card">📊 总刷题量：${totalAll} 题 | 人均：${avg} 题</div>
+            <h3>📚 选择题管理</h3><textarea id="batchQ" rows="3" placeholder="题目|选项1,选项2|答案索引|解析"></textarea><button id="batchImport">批量导入</button>
+            <input id="newQText" placeholder="题目"><input id="newQOpts" placeholder="选项,逗号分隔"><input id="newQAns" placeholder="答案索引"><input id="newQExp" placeholder="解析"><button id="addQ">添加</button><div id="qList"></div><hr>
+            <h3>📄 材料题管理</h3><textarea id="batchM" rows="3" placeholder="标题|内容|解析"></textarea><button id="batchImportM">批量导入</button>
+            <input id="newMTitle" placeholder="标题"><input id="newMContent" placeholder="内容"><input id="newMAnalysis" placeholder="解析"><button id="addM">添加</button><div id="mList"></div><hr>
+            <h3>👥 学生管理</h3><textarea id="batchStudents" rows="3" placeholder="姓名,密码,头像(emoji)"></textarea><button id="batchImportStudents">批量导入</button><div id="studentList"></div>
+            <div id="postListAdmin"></div><hr><h3>📩 学生来信</h3><div id="feedbackList"></div><hr><h3>🎁 刮奖记录</h3><div id="scratchList"></div><hr>
+            <h3>💬 评论管理</h3><div id="commentList"></div><hr><h3>🎁 刮奖券掉落概率</h3><input id="ticketRate" type="number" step="0.01" value="${db.dropSettings.ticketDropRate}"><button id="saveDropRate">保存</button>
+            <hr><h3>🎁 奖项概率设置</h3><div id="prizeList"></div><input id="newPrizeName" placeholder="奖品名"><input id="newPrizeProb" placeholder="概率权重" type="number"><button id="addPrize">添加奖品</button>
+            <button id="closeAdmin">关闭</button></div>`;
+        document.getElementById("contentArea").innerHTML = html;
+
+        function refreshQ() { let ql=document.getElementById("qList"); ql.innerHTML=db.questions.map((q,i)=>`<div class="student-item"><span>${q.text.substring(0,30)}</span><button class="small-btn" data-qidx="${i}">删</button></div>`).join(''); document.querySelectorAll("[data-qidx]").forEach(b=>b.addEventListener("click",()=>{ db.questions.splice(parseInt(b.dataset.qidx),1); saveToLocal(); refreshQ(); })); }
+        function refreshM() { let ml=document.getElementById("mList"); ml.innerHTML=db.materialQuestions.map((m,i)=>`<div class="student-item"><span>${m.title}</span><button class="small-btn" data-midx="${i}">删</button></div>`).join(''); document.querySelectorAll("[data-midx]").forEach(b=>b.addEventListener("click",()=>{ db.materialQuestions.splice(parseInt(b.dataset.midx),1); saveToLocal(); refreshM(); })); }
+        function refreshStudents() { let sl=document.getElementById("studentList"); let sorted=[...db.students].sort((a,b)=>b.totalQ-a.totalQ); sl.innerHTML=sorted.map((s,i)=>`<div class="student-item"><span>${i+1}. ${s.avatar} ${s.name} (刷题:${s.totalQ} 正确:${s.correct} 奖券:${s.scratchCoupons})</span><div><button class="small-btn small-success" data-change="${s.id}">改密码</button><button class="small-btn" data-sid="${s.id}">删</button></div></div>`).join('');
+            document.querySelectorAll("[data-sid]").forEach(b=>b.addEventListener("click",()=>{ db.students=db.students.filter(s=>s.id!==b.dataset.sid); if(currentStudent?.id===b.dataset.sid) currentStudent=null; saveToLocal(); refreshStudents(); }));
+            document.querySelectorAll("[data-change]").forEach(b=>b.addEventListener("click",()=>{ let p=prompt("新密码"); if(p){ let s=db.students.find(s=>s.id===b.dataset.change); if(s) { s.password=p; saveToLocal(); alert("修改成功"); refreshStudents(); } } }));
+        }
+        function refreshPosts() { let pd=document.getElementById("postListAdmin"); pd.innerHTML=`<div class="rank-title">📝 动态管理</div>`+db.posts.map(p=>`<div class="student-item"><span>${p.studentAvatar} ${p.studentName}: ${p.content.substring(0,40)}</span><button class="small-btn" data-post="${p.id}">删除</button></div>`).join(''); document.querySelectorAll("[data-post]").forEach(b=>b.addEventListener("click",()=>{ db.posts=db.posts.filter(p=>p.id!==b.dataset.post); saveToLocal(); refreshPosts(); })); }
+        function refreshFeedbacks() { let fd=document.getElementById("feedbackList"); fd.innerHTML=`<div class="rank-title">📩 来信</div>`+db.feedbacks.map(f=>`<div class="student-item" style="background:${f.isRead?'#e9ecef':'#fff3cd'}"><span>${f.studentAvatar} ${f.studentName}: ${f.content}</span><div><button class="small-btn" data-fb="${f.id}">${f.isRead?'已读':'标记已读'}</button><button class="small-btn" data-fbdel="${f.id}">删除</button></div></div>`).join('');
+            document.querySelectorAll("[data-fb]").forEach(b=>b.addEventListener("click",()=>{ let fb=db.feedbacks.find(f=>f.id===b.dataset.fb); if(fb) fb.isRead=true; saveToLocal(); refreshFeedbacks(); }));
+            document.querySelectorAll("[data-fbdel]").forEach(b=>b.addEventListener("click",()=>{ db.feedbacks=db.feedbacks.filter(f=>f.id!==b.dataset.fbdel); saveToLocal(); refreshFeedbacks(); }));
+        }
+        function refreshScratch() { let sd=document.getElementById("scratchList"); sd.innerHTML=`<div class="rank-title">🎉 刮奖记录</div>`+db.scratchRecords.map(r=>`<div class="scratch-record-item">${r.studentAvatar} ${r.studentName} 于 ${new Date(r.timestamp).toLocaleString()} 刮中：${r.prize}</div>`).join(''); }
+        function refreshComments() { let cd=document.getElementById("commentList"); let all=[]; db.posts.forEach(p=>{ p.comments.forEach(c=>{ all.push({...c, postContent:p.content.substring(0,30)}); }); }); cd.innerHTML=`<div class="rank-title">💬 评论管理</div>`+all.map(c=>`<div class="student-item"><span>${c.studentAvatar} ${c.studentName}: ${c.content}</span><button class="small-btn" data-comment="${c.id}">删除</button></div>`).join('');
+            document.querySelectorAll("[data-comment]").forEach(b=>b.addEventListener("click",()=>{ for(let p of db.posts){ let idx=p.comments.findIndex(c=>c.id==b.dataset.comment); if(idx!==-1){ p.comments.splice(idx,1); saveToLocal(); refreshComments(); break; } } }));
+        }
+        function refreshPrizes() { let pd=document.getElementById("prizeList"); pd.innerHTML=db.prizes.map((p,i)=>`<div class="student-item"><span>${p.name} (权重:${p.probability})</span><button class="small-btn" data-prize="${i}">删</button></div>`).join(''); document.querySelectorAll("[data-prize]").forEach(b=>b.addEventListener("click",()=>{ db.prizes.splice(parseInt(b.dataset.prize),1); saveToLocal(); refreshPrizes(); })); }
+        refreshQ(); refreshM(); refreshStudents(); refreshPosts(); refreshFeedbacks(); refreshScratch(); refreshComments(); refreshPrizes();
+        document.getElementById("batchImport")?.addEventListener("click",()=>{ let lines=document.getElementById("batchQ").value.split(/\r?\n/); lines.forEach(l=>{ let p=l.split("|"); if(p.length>=4) db.questions.push({ id:Date.now(), text:p[0], options:p[1].split(","), answerIndex:parseInt(p[2]), explanation:p[3] }); }); saveToLocal(); refreshQ(); });
+        document.getElementById("batchImportM")?.addEventListener("click",()=>{ let lines=document.getElementById("batchM").value.split(/\r?\n/); lines.forEach(l=>{ let p=l.split("|"); if(p.length>=3) db.materialQuestions.push({ id:"m"+Date.now()+Math.random(), title:p[0], content:p[1], analysis:p[2] }); }); saveToLocal(); refreshM(); });
+        document.getElementById("addQ")?.addEventListener("click",()=>{ let t=document.getElementById("newQText").value, opts=document.getElementById("newQOpts").value.split(","), ans=parseInt(document.getElementById("newQAns").value), exp=document.getElementById("newQExp").value; if(t&&opts.length) db.questions.push({ id:Date.now(), text:t, options:opts, answerIndex:ans, explanation:exp }); saveToLocal(); refreshQ(); });
+        document.getElementById("addM")?.addEventListener("click",()=>{ let t=document.getElementById("newMTitle").value, c=document.getElementById("newMContent").value, a=document.getElementById("newMAnalysis").value; if(t&&c) db.materialQuestions.push({ id:"m"+Date.now()+Math.random(), title:t, content:c, analysis:a }); saveToLocal(); refreshM(); });
+        document.getElementById("batchImportStudents")?.addEventListener("click",()=>{ let lines=document.getElementById("batchStudents").value.split(/\r?\n/); lines.forEach(l=>{ let parts=l.split(","); if(parts.length>=2){ let name=parts[0].trim(), pwd=parts[1].trim()||"000000", ava=parts[2]?.trim()||"🐣"; if(name) db.students.push({ id:"s"+Date.now()+Math.random(), name, password:pwd, avatar:ava, totalQ:0, correct:0, scratchCoupons:0, rankRewardFlag:false, wrongQuestions:[], lastResetMonth:`${new Date().getFullYear()}-${new Date().getMonth()+1}`, avatarFixed:true }); } }); saveToLocal(); refreshStudents(); });
+        document.getElementById("addPrize")?.addEventListener("click",()=>{ let n=document.getElementById("newPrizeName").value, p=parseFloat(document.getElementById("newPrizeProb").value); if(n&&!isNaN(p)) db.prizes.push({ name:n, probability:p }); saveToLocal(); refreshPrizes(); });
+        document.getElementById("saveDropRate")?.addEventListener("click",()=>{ db.dropSettings.ticketDropRate=parseFloat(document.getElementById("ticketRate").value); saveToLocal(); alert("保存成功"); });
+        document.getElementById("closeAdmin")?.addEventListener("click",()=>{ activeTab="home"; document.querySelector(".tab.active").click(); });
+    }
+
+    function renderCurrentView() {
+        if (!currentStudent && !currentAdmin) { showLogin(); return; }
+        if (currentAdmin) { renderAdminPanel(); return; }
+        checkMonthlyReset();
+        if (activeTab === "home") renderHomeView();
+        else if (activeTab === "quiz") renderQuizView();
+        else if (activeTab === "material") renderMaterialView();
+        else if (activeTab === "rank") renderRankView();
+        else if (activeTab === "my") renderMyView();
+    }
+
+    function showLogin() {
+        let existing = document.getElementById("loginOverlay");
+        if (existing) existing.remove();
+        let selectedAvatar = "🐱", isNew = true;
+        let html = `<div class="login-overlay" id="loginOverlay"><div class="login-card"><div class="tab-login"><div class="login-tab active" data-type="student">学生登录</div><div class="login-tab" data-type="admin">管理员登录</div></div>
+            <div id="studentLoginFields"><input id="loginName" placeholder="姓名"><input id="loginPwd" type="password" placeholder="密码">
+            <div><strong>选择头像</strong><div class="avatar-grid" id="avatarGrid"></div></div></div>
+            <div id="adminLoginFields" style="display:none;"><input id="adminName" placeholder="管理员姓名"><input id="adminPwd" type="password" placeholder="密码"></div>
+            <div id="loginError" class="error-msg"></div><button id="loginBtn" class="btn-primary">登录</button></div></div>`;
+        document.body.insertAdjacentHTML('beforeend', html);
+        let grid = document.getElementById("avatarGrid");
+        let nameInput = document.getElementById("loginName");
+        function checkExisting() {
+            let name = nameInput.value.trim();
+            let existing = db.students.find(s => s.name === name);
+            isNew = !existing;
+            grid.querySelectorAll(".avatar-option").forEach(div => {
+                if (existing) { div.classList.add("disabled"); div.style.cursor = "not-allowed"; if (div.innerText === existing.avatar) div.classList.add("selected"); }
+                else { div.classList.remove("disabled"); div.style.cursor = "pointer"; }
+            });
+            if (existing && existing.avatar) selectedAvatar = existing.avatar;
+        }
+        nameInput.addEventListener("input", checkExisting);
+        avatarList.forEach(ava => {
+            let div = document.createElement("div");
+            div.className = "avatar-option";
+            div.innerText = ava;
+            div.onclick = () => { if (isNew) { document.querySelectorAll(".avatar-option").forEach(a => a.classList.remove("selected")); div.classList.add("selected"); selectedAvatar = ava; } else alert("头像已固定，无法修改"); };
+            grid.appendChild(div);
+        });
+        let type = "student";
+        document.querySelectorAll(".login-tab").forEach(tab=>tab.addEventListener("click",()=>{
+            document.querySelectorAll(".login-tab").forEach(t=>t.classList.remove("active")); tab.classList.add("active");
+            type = tab.dataset.type;
+            document.getElementById("studentLoginFields").style.display = type==="student" ? "block" : "none";
+            document.getElementById("adminLoginFields").style.display = type==="admin" ? "block" : "none";
+        }));
+        document.getElementById("loginBtn").addEventListener("click",()=>{
+            if (type === "student") {
+                let name = document.getElementById("loginName").value.trim();
+                let pwd = document.getElementById("loginPwd").value;
+                if (!name) { document.getElementById("loginError").innerText = "请输入姓名"; return; }
+                let student = db.students.find(s=>s.name===name && s.password===pwd);
+                if (student) {
+                    currentStudent = student; currentAdmin = null;
+                    document.getElementById("loginOverlay").remove();
+                    updateUI(); renderCurrentView();
+                    if (!audioCtx) initMusic();
+                } else {
+                    if (!isNew) { document.getElementById("loginError").innerText = "密码错误"; return; }
+                    let newId = "s"+Date.now()+Math.random();
+                    let newStu = { id: newId, name, password: pwd||"000000", avatar: selectedAvatar, totalQ:0, correct:0, scratchCoupons:0, rankRewardFlag:false, wrongQuestions:[], lastResetMonth:`${new Date().getFullYear()}-${new Date().getMonth()+1}`, avatarFixed:true };
+                    db.students.push(newStu);
+                    saveToLocal();
+                    currentStudent = newStu;
+                    document.getElementById("loginOverlay").remove();
+                    updateUI(); renderCurrentView();
+                    if (!audioCtx) initMusic();
+                }
+            } else {
+                let name = document.getElementById("adminName").value.trim();
+                let pwd = document.getElementById("adminPwd").value;
+                let admin = db.admins.find(a=>a.name===name && a.password===pwd);
+                if (admin) { currentAdmin = admin; currentStudent = null; document.getElementById("loginOverlay").remove(); updateUI(); renderCurrentView(); }
+                else document.getElementById("loginError").innerText = "管理员账号错误";
+            }
+        });
+    }
+
+    function updateUI() {
+        if (currentStudent) { document.getElementById("avatarEmoji").innerText = currentStudent.avatar; document.getElementById("userName").innerText = currentStudent.name; }
+        else if (currentAdmin) { document.getElementById("avatarEmoji").innerText = "🔧"; document.getElementById("userName").innerText = currentAdmin.name; }
+        else { document.getElementById("avatarEmoji").innerText = "😊"; document.getElementById("userName").innerText = "未登录"; }
+    }
+
+    function initApp() {
+        loadFromLocal();
+        document.getElementById("root").innerHTML = `<div class="app-container"><div class="header"><div class="user-info"><span class="avatar" id="avatarEmoji">😊</span><span class="user-name" id="userName">未登录</span></div><button class="btn-icon" id="logoutBtn">切换账号</button></div>
+            <div class="tab-bar"><div class="tab active" data-tab="home">🏠 主页</div><div class="tab" data-tab="quiz">📝 刷题</div><div class="tab" data-tab="material">📄 材料题</div><div class="tab" data-tab="rank">🏆 排行</div><div class="tab" data-tab="my">👤 我的</div></div>
+            <div id="scrollMsg" class="scroll-msg"></div><div class="content" id="contentArea"></div></div>`;
+        updateScrollMessage();
+        setInterval(updateScrollMessage, 10000);
+        document.querySelectorAll(".tab").forEach(tab=>tab.addEventListener("click",()=>{ document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active")); tab.classList.add("active"); activeTab=tab.dataset.tab; renderCurrentView(); }));
+        document.getElementById("logoutBtn").addEventListener("click",()=>{ currentStudent=null; currentAdmin=null; showLogin(); });
+        if (!currentStudent && !currentAdmin) showLogin(); else { updateUI(); renderCurrentView(); }
+        if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(e=>console.log("sw not registered"));
+    }
+    function escapeHtml(s) { return String(s).replace(/[&<>]/g,function(m){return m==='&'?'&amp;':m==='<'?'&lt;':m==='>'?'&gt;':m;}); }
+    initApp();
+</script>
+</body>
+</html>
